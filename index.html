@@ -1,0 +1,252 @@
+<script src ="/node_modules/p5/lib/p5.js">
+"use strict"
+
+console.log("!");
+let records = [];
+
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+/*
+const create_base_record = (file, type, tags)=> {
+    const record = {
+        file: file,
+        type: type,
+        tags: tags,
+        html: undefined
+    };
+    return record;
+}
+
+
+const create_image_record = (file, type, tags, width, height)=> {
+    create_base_record(file, type, tags);
+}
+
+const create_movie_record = (file, type, tags, width, height)=> {
+    create_base_record(file, type, tags);
+}
+*/
+
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+
+
+async function init() {
+
+    //
+    // load data
+    //
+    const data = (await fetch("data_advanced.json").then(x => x.json())).media;
+    
+    // for (let i = 0; i < data.length; i++) {
+    //     const d = data[i];
+
+    //     const record = create_record(d.file, d.type, d.tags);
+    //     records.push(record);
+        
+    // }
+
+    for (let i = 0; i < data.length; i++) {
+        console.log("!!!");
+        data[i].id = i;
+    }
+
+    records = data;
+    
+
+    //
+    // make node network with tags
+    //
+
+    // ...
+
+
+    //
+    // create webpage
+    //
+
+    //LoadImage();
+
+    
+    for (let i = 0; i < records.length; i++) {
+        const r = records[i];
+        let div;
+        if (r.type == "image") { // style="left:${x}; top:${y}
+            div = `<div class="record">
+                    <img src='Sort/${r.file}'> 
+                </div>`;
+        }
+        else {
+            div = `<div class="record"></div>`;
+        }
+
+        const dom_elm = create_dom_element(div);
+        document.body.append(dom_elm);
+        r.html = dom_elm;
+    }
+
+   
+    sort_by_size();
+   
+   
+
+
+}
+
+init();
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+
+function compare_record_by_size( a, b ) {
+    
+    if (!('width' in a) && !!('width' in b)) { // they both have no width, we could sort them by something else if wanted
+        // compare_record_by_id_desc(a, b); // todo
+    }
+
+    if (!('width' in a)) {
+        // sub sort by type
+        return 1;
+    }
+    if (!('width' in b)) {
+        return -1;
+    }
+    
+    if ( a.width * a.height < b.width * b.height ){
+        return 1;
+    }
+    if ( a.width * a.height > b.width * b.height ){
+        return -1;
+    }
+    return 0;
+}
+
+function compare_record_by_brightness( a, b ) {
+    
+    if (!('brightness' in a) && !!('brightness' in b)) { // they both have no brightness, we could sort them by something else if wanted
+        // compare_record_by_id_desc(a, b); // todo
+    }
+
+    if (!('brightness' in a)) {
+        // sub sort by type
+        return 1;
+    }
+    if (!('brightness' in b)) {
+        return -1;
+    }
+    
+    if ( a.brightness < b.brightness ){
+        return 1;
+    }
+    if ( a.brightness > b.brightness ){
+        return -1;
+    }
+    return 0;
+}
+
+
+
+function compare_record_by_id_desc( a, b ) {
+  
+    if ( a.id < b.id ){
+        return 1;
+    }
+    if ( a.id > b.id ){
+        return -1;
+    }
+    return 0;
+}
+
+
+
+
+
+
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+
+const sort_records = (comparator)=> {
+    let x = 300;
+    let y = 0;
+
+    records.sort(comparator);
+
+    for (let i = 0; i < records.length; i++) {
+        const r = records[i];
+        r.html.style["top"] = y;
+        y += 100;
+        r.html.style["left"] = x;
+
+    }
+
+}
+
+const sort_by_size = ()=> {
+    sort_records(compare_record_by_size);
+}
+
+const sort_by_id_desc = ()=> {
+    sort_records(compare_record_by_id_desc);
+}
+
+const sort_by_brightness = ()=> {
+    sort_records(compare_record_by_brightness);
+}
+
+
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+
+
+const btn_brightness = ()=> {
+    sort_by_brightness();
+}
+
+const btn_size = ()=> {
+    sort_by_size();
+}
+
+
+function create_dom_element(innerHTML) {
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = innerHTML;
+    return wrapper.firstChild;
+}
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+const get_btn_brightness = document.getElementsByClassName("btnbright");
+get_btn_brightness.addEventllistener("click" ,btn_brightness ,true );
+
+
+const get_btn_size = document.getElementsByClassName("btnbright");
+get_btn_size.addEventllistener("click" ,btn_size ,true );
+
+
+ 
+
+</script>
+
+<button class="btnbright" type="button">brightness</button>
+<button class="btnsize" type="button" >size</button>
+
+<style>
+
+.record {
+    position: fixed;
+    width: 100px;
+    height: 100px;
+    background-color: red;
+    stroke: black;
+}
+
+img {
+    width: 100px;
+    height: 100px;
+}
+
+</style>

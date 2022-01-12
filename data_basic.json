@@ -1,0 +1,24 @@
+{
+    "media": [
+        {
+            "file": "comp28.tiff",
+            "type": "image",
+            "tags": ["laser", "webcam"]
+        },
+        {
+            "file": "comp29.tiff",
+            "type": "image",
+            "tags": ["laser", "webcam"]
+        },
+        {
+            "file": "CubittVirilioNowprepubdraft.pdf",
+            "type": "pdf",
+            "tags": ["text"]
+        },
+        {
+            "file": "Desktop 2021.06.10 - 21.32.07.01.mp4",
+            "type": "movie",
+            "tags": ["health"]
+        }
+    ]
+}
