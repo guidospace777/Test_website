@@ -1,252 +1,170 @@
-<script src ="/node_modules/p5/lib/p5.js">
-"use strict"
-
-console.log("!");
-let records = [];
-
-
-// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-/*
-const create_base_record = (file, type, tags)=> {
-    const record = {
-        file: file,
-        type: type,
-        tags: tags,
-        html: undefined
-    };
-    return record;
-}
-
-
-const create_image_record = (file, type, tags, width, height)=> {
-    create_base_record(file, type, tags);
-}
-
-const create_movie_record = (file, type, tags, width, height)=> {
-    create_base_record(file, type, tags);
-}
-*/
-
-
-// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+<script src="/data/thumbnails.js"></script>
+<script src="/data/screenXYZ.js"></script>
+<!-- <script src ="/data/thumbnails_100.js"></script> -->
+<script src="data/sphere_points.js"></script>
+<script src="/node_modules/p5/lib/p5.js"></script>
 
 
 
-async function init() {
 
-    //
-    // load data
-    //
-    const data = (await fetch("data_advanced.json").then(x => x.json())).media;
-    
-    // for (let i = 0; i < data.length; i++) {
-    //     const d = data[i];
+<script>
+    "use strict";
 
-    //     const record = create_record(d.file, d.type, d.tags);
-    //     records.push(record);
+    let data;
+
+
+    let thumbnail_array = Array(thumbnails.length);
+
+    let y_rotate = 0;
+    let x_rotate = 0;
+    let z_rotate = 0;
+
+
+    let records = Array();
+
+    let background;
+
+
+    function preload() {
+
         
-    // }
 
-    for (let i = 0; i < data.length; i++) {
-        console.log("!!!");
-        data[i].id = i;
+       
+        // for (let i = 0; i < 100; i++) {
+        //     //LATER AANPASSEN NAAR data.length
+        //     loadImage("data/" + data[i].thumbnail, img => {
+        //             // data.thumbnail[i] = img;
+
+        //     });
+        // }
+
+
+        console.log("preload done");
     }
 
-    records = data;
-    
+    async function setup() {
+        createCanvas(windowWidth, windowHeight, WEBGL);
+        background = loadImage("/data/background.jpg");
 
-    //
-    // make node network with tags
-    //
+        data = (await fetch("data/records.json").then(x => x.json())).media;
 
-    // ...
+        
+        // console.log(data);
 
-
-    //
-    // create webpage
-    //
-
-    //LoadImage();
-
-    
-    for (let i = 0; i < records.length; i++) {
-        const r = records[i];
-        let div;
-        if (r.type == "image") { // style="left:${x}; top:${y}
-            div = `<div class="record">
-                    <img src='Sort/${r.file}'> 
-                </div>`;
+        
+        //LATER AANPASSEN NAAR data.length
+        for (let i = 0; i < 100; i++) {
+            thumbnail_array[i] = loadImage("data/"+data[i].thumbnail)
+            let r = {
+                "file": data[i].file,
+                "ID": data[i].ID,
+                "thumbnail": "data/" + data[i].thumbnail,
+                "thumbnailwidth": data[i].thumbnailwidth,
+                "thumbnailheight": data[i].thumbnailheight,
+                "type": data[i].type,
+                "width": data[i].width,
+                "height": data[i].height,
+                "tags": data[i].tags,
+                "link": data[i].link,
+                "brightness": data[i].brightness,
+                "x": 0,
+                "y": 0,
+                "z": 0
+            };
+            records.push(r);
         }
-        else {
-            div = `<div class="record"></div>`;
+        console.log("n records: " + records.length);
+
+        textFont('Georgia');
+
+
+        console.log("setup done");
+    }
+
+
+    async function draw() {
+
+        image(background,-windowWidth/2 ,-windowHeight/2, windowWidth, windowHeight);
+
+        let dim_x = windowWidth;
+        let dim_y = windowHeight;
+        let dim_z = dim_x;
+
+
+
+
+
+        push();
+        translate(-windowWidth/2, -windowHeight/2, -500);
+        rotateY(y_rotate);
+        rotateX(x_rotate);
+        rotateZ(z_rotate);
+
+        //Chaneg to data.length
+        for (let i = 0; i < 100; i++) {
+            let r = records[i];
+            let p = sphere_points[i];
+            let x = p[0] * dim_x;
+            let y = p[1] * dim_y;
+            let z = p[2] * dim_z;
+
+            r.x = _screenX(x, y, z);
+            r.y = _screenY(x, y, z);
+            // r.z = _screenZ(x, y, z);
+        
+
+            point(p[0] * dim_x, p[1] * dim_y, p[2] * dim_z);
+            // image(thumbnail_array[i],_screen_X,_screen_Y)
+
+
         }
 
-        const dom_elm = create_dom_element(div);
-        document.body.append(dom_elm);
-        r.html = dom_elm;
-    }
 
-   
-    sort_by_size();
-   
-   
+        pop();
 
-
-}
-
-init();
-
-// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+        noStroke();
+        for (let i = 0; i < records.length; i++) {
+            let r = records[i];
+            image(thumbnail_array[i],r.x,r.y);
+            // rect(r.x, r.y, 76, 30);
+        }
 
 
-function compare_record_by_size( a, b ) {
-    
-    if (!('width' in a) && !!('width' in b)) { // they both have no width, we could sort them by something else if wanted
-        // compare_record_by_id_desc(a, b); // todo
-    }
-
-    if (!('width' in a)) {
-        // sub sort by type
-        return 1;
-    }
-    if (!('width' in b)) {
-        return -1;
-    }
-    
-    if ( a.width * a.height < b.width * b.height ){
-        return 1;
-    }
-    if ( a.width * a.height > b.width * b.height ){
-        return -1;
-    }
-    return 0;
-}
-
-function compare_record_by_brightness( a, b ) {
-    
-    if (!('brightness' in a) && !!('brightness' in b)) { // they both have no brightness, we could sort them by something else if wanted
-        // compare_record_by_id_desc(a, b); // todo
-    }
-
-    if (!('brightness' in a)) {
-        // sub sort by type
-        return 1;
-    }
-    if (!('brightness' in b)) {
-        return -1;
-    }
-    
-    if ( a.brightness < b.brightness ){
-        return 1;
-    }
-    if ( a.brightness > b.brightness ){
-        return -1;
-    }
-    return 0;
-}
+        fill(255);
+        // text(""+frameRate(), 20, 20);
+        // console.log(frameRate());
 
 
-
-function compare_record_by_id_desc( a, b ) {
-  
-    if ( a.id < b.id ){
-        return 1;
-    }
-    if ( a.id > b.id ){
-        return -1;
-    }
-    return 0;
-}
-
-
-
-
-
-
-
-// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-
-const sort_records = (comparator)=> {
-    let x = 300;
-    let y = 0;
-
-    records.sort(comparator);
-
-    for (let i = 0; i < records.length; i++) {
-        const r = records[i];
-        r.html.style["top"] = y;
-        y += 100;
-        r.html.style["left"] = x;
+        x_rotate += 0.0005;
+        y_rotate += 0.0005;
+        z_rotate += 0.0005;
 
     }
 
-}
+    function windowResized() {
+        resizeCanvas(windowWidth, windowHeight);
+    }
 
-const sort_by_size = ()=> {
-    sort_records(compare_record_by_size);
-}
-
-const sort_by_id_desc = ()=> {
-    sort_records(compare_record_by_id_desc);
-}
-
-const sort_by_brightness = ()=> {
-    sort_records(compare_record_by_brightness);
-}
-
-
-
-// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-
-
-const btn_brightness = ()=> {
-    sort_by_brightness();
-}
-
-const btn_size = ()=> {
-    sort_by_size();
-}
-
-
-function create_dom_element(innerHTML) {
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = innerHTML;
-    return wrapper.firstChild;
-}
-
-// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-const get_btn_brightness = document.getElementsByClassName("btnbright");
-get_btn_brightness.addEventllistener("click" ,btn_brightness ,true );
-
-
-const get_btn_size = document.getElementsByClassName("btnbright");
-get_btn_size.addEventllistener("click" ,btn_size ,true );
-
-
- 
-
+    function drawRecord(record, x, y) {
+        // image
+        // label
+    }
 </script>
 
 <button class="btnbright" type="button">brightness</button>
-<button class="btnsize" type="button" >size</button>
+<button class="btnsize" type="button">size</button>
 
 <style>
+    .record {
+        position: fixed;
+        width: 100px;
+        height: 100px;
+        background-color: red;
+        stroke: black;
+    }
 
-.record {
-    position: fixed;
-    width: 100px;
-    height: 100px;
-    background-color: red;
-    stroke: black;
-}
-
-img {
-    width: 100px;
-    height: 100px;
-}
-
+    img {
+        width: 100px;
+        height: 100px;
+    }
 </style>
